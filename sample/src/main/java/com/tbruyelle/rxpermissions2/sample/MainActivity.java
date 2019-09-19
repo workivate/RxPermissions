@@ -12,6 +12,7 @@ import com.jakewharton.rxbinding2.view.RxView;
 import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.tbruyelle.rxpermissions2.RxPermissionsFragment;
+import com.tbruyelle.rxpermissions2.SystemPermission;
 
 import java.io.IOException;
 
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
             .flatMap(new Function<Object, Observable<Boolean>>() {
                 @Override
                 public Observable<Boolean> apply(Object o) throws Exception {
-                    return rxPermissions.requestSystemPermission(RxPermissionsFragment.SystemPermission.DRAW_OVERLAYS);
+                    return rxPermissions.requestSystemPermission(SystemPermission.DRAW_OVERLAYS);
                 }
             })
             .subscribe(new Consumer<Boolean>() {

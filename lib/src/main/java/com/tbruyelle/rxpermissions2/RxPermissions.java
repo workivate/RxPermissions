@@ -123,7 +123,7 @@ public class RxPermissions {
 		};
 	}
 
-	public <T> ObservableTransformer<T, Boolean> ensure(final RxPermissionsFragment.SystemPermission systemPermission) {
+	public <T> ObservableTransformer<T, Boolean> ensure(final SystemPermission systemPermission) {
 		return new ObservableTransformer<T, Boolean>() {
 			@Override
 			public ObservableSource<Boolean> apply(Observable<T> o) {
@@ -192,7 +192,7 @@ public class RxPermissions {
 		return Observable.just(TRIGGER).compose(ensure(permissions));
 	}
 
-	public Observable<Boolean> requestSystemPermission(final RxPermissionsFragment.SystemPermission systemPermission) {
+	public Observable<Boolean> requestSystemPermission(final SystemPermission systemPermission) {
 		return Observable.just(TRIGGER).compose(ensure(systemPermission));
 	}
 
@@ -251,14 +251,14 @@ public class RxPermissions {
 		// At the end, the observables are combined to have a unique response.
 		for (String permission : permissions) {
 			mRxPermissionsFragment.get().log("Requesting permission " + permission);
-			if (isGranted(permission)) {
+			if (isRuntimePermissionGranted(permission)) {
 				// Already granted, or not Android M
 				// Return a granted Permission object.
 				list.add(Observable.just(new Permission(permission, true, false)));
 				continue;
 			}
 
-			if (isRevoked(permission)) {
+			if (isRuntimePermissionRevoked(permission)) {
 				// Revoked by a policy, return a denied Permission object.
 				list.add(Observable.just(new Permission(permission, false, false)));
 				continue;
@@ -272,7 +272,7 @@ public class RxPermissions {
 				mRxPermissionsFragment.get().setSubjectForPermission(permission, subject);
 			}
 
-			if (unrequestedPermissions.isEmpty() && !isGranted(permission) && !isRevoked(permission)) {
+			if (unrequestedPermissions.isEmpty() && !isRuntimePermissionGranted(permission) && !isRuntimePermissionRevoked(permission)) {
 				unrequestedPermissions.add(permission);
 			}
 
@@ -287,7 +287,7 @@ public class RxPermissions {
 	}
 
 	@TargetApi(Build.VERSION_CODES.M)
-	private Observable<Permission> requestImplementation(final RxPermissionsFragment.SystemPermission systemPermission) {
+	private Observable<Permission> requestImplementation(final SystemPermission systemPermission) {
 
 		mRxPermissionsFragment.get().log("Requesting permission " + systemPermission.getPermissionName());
 		if (systemPermission.getEnabledChecker().invoke(mRxPermissionsFragment.get().getContext())) {
@@ -332,7 +332,7 @@ public class RxPermissions {
 	@TargetApi(Build.VERSION_CODES.M)
 	private boolean shouldShowRequestPermissionRationaleImplementation(final Activity activity, final String... permissions) {
 		for (String p : permissions) {
-			if (!isGranted(p) && !activity.shouldShowRequestPermissionRationale(p)) {
+			if (!isRuntimePermissionGranted(p) && !activity.shouldShowRequestPermissionRationale(p)) {
 				return false;
 			}
 		}
@@ -345,8 +345,8 @@ public class RxPermissions {
 	 * Always true if SDK &lt; 23.
 	 */
 	@SuppressWarnings("WeakerAccess")
-	public boolean isGranted(String permission) {
-		return !isMarshmallow() || mRxPermissionsFragment.get().isGranted(permission);
+	public boolean isRuntimePermissionGranted(String permission) {
+		return !isMarshmallow() || mRxPermissionsFragment.get().isRuntimePermissionGranted(permission);
 	}
 
 	/**
@@ -355,8 +355,8 @@ public class RxPermissions {
 	 * Always false if SDK &lt; 23.
 	 */
 	@SuppressWarnings("WeakerAccess")
-	public boolean isRevoked(String permission) {
-		return isMarshmallow() && mRxPermissionsFragment.get().isRevoked(permission);
+	public boolean isRuntimePermissionRevoked(String permission) {
+		return isMarshmallow() && mRxPermissionsFragment.get().isRuntimePermissionRevoked(permission);
 	}
 
 	boolean isMarshmallow() {
